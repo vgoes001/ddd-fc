@@ -1,3 +1,6 @@
+import SendConsoleLogHandler from "../../product/event/handler/send-console-log-handler";
+import SendConsoleLogWhenCustomerChangedAddress from "../../product/event/handler/send-console-log-when-customer-changed-address.event";
+import SendEmailWhenProductIsCreatedHandler from "../../product/event/handler/send-email-when-product-is-created.handler";
 import Address from "../value-object/address";
 import Customer from "./customer";
 
@@ -60,4 +63,22 @@ describe("Customer unit tests", () => {
     customer.addRewardPoints(10);
     expect(customer.rewardPoints).toBe(20);
   });
+
+  it("should notify customer created event handler", async () => {
+    const eventHandler = new SendConsoleLogHandler();
+    const spyEventHandler = jest.spyOn(eventHandler, "handle");
+    Customer.addDomainEvent("CustomerCreatedEvent", eventHandler)
+    const customer = new Customer("1", "Customer 1");
+    expect(spyEventHandler).toHaveBeenCalled();
+  })
+
+  it("should notify when customer change address event handler", async () => {
+    const eventHandler = new SendConsoleLogWhenCustomerChangedAddress();
+    const spyEventHandler = jest.spyOn(eventHandler, "handle");
+    Customer.addDomainEvent("CustomerAddressChangedEvent", eventHandler)
+    const customer = new Customer("1", "Customer 1");
+    const address = new Address("Street 1", 123, "13330-250", "São Paulo");
+    customer.changeAddress(address);
+    expect(spyEventHandler).toHaveBeenCalled();
+  })
 });

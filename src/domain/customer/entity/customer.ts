@@ -1,4 +1,11 @@
+import EventDispatcher from "../../@shared/event/event-dispatcher";
+import EventHandlerInterface from "../../@shared/event/event-handler.interface";
+import CustomerAddressChangedEvent from "../../product/event/customer-address-changed.event";
+import CustomerCreatedEvent from "../../product/event/customer-created.event";
+import SendConsoleLogHandler from "../../product/event/handler/send-console-log-handler";
 import Address from "../value-object/address";
+
+const eventDispatcher = new EventDispatcher();
 
 export default class Customer {
   private _id: string;
@@ -11,6 +18,12 @@ export default class Customer {
     this._id = id;
     this._name = name;
     this.validate();
+    const customerCreatedEvent = new CustomerCreatedEvent({ id, name });
+    eventDispatcher.notify(customerCreatedEvent);
+  }
+
+  static addDomainEvent(eventName: string, eventHandler: EventHandlerInterface) {
+    eventDispatcher.register(eventName, eventHandler);
   }
 
   get id(): string {
@@ -42,9 +55,11 @@ export default class Customer {
   get Address(): Address {
     return this._address;
   }
-  
+
   changeAddress(address: Address) {
     this._address = address;
+    const customerAddressChangedEvent = new CustomerAddressChangedEvent(this);
+    eventDispatcher.notify(customerAddressChangedEvent);
   }
 
   isActive(): boolean {
